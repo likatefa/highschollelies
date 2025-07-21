@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Highschool Elites</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0; padding: 0; height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f0f1c;
+      color: #eee;
+      overflow-x: hidden;
+    }
+    canvas#bgCanvas {
+      position: fixed; top: 0; left: 0; z-index: 0;
+      width: 100%; height: 100%;
+    }
+    /* Welcome page style - inspired by second image */
+    #welcomePage {
+      position: relative; z-index: 2;
+      max-width: 1200px; margin: auto; padding: 40px 20px;
+    }
+    #welcomePage h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+    .subject-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+      gap: 20px;
+    }
+    .subject-card {
+      background: #1a1a1a;
+      border-radius: 10px;
+      padding: 20px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      box-shadow: 0 0 15px rgba(92,210,255,0.2);
+    }
+    .subject-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 0 20px #5cd2ff;
+    }
+    .subject-card h3 {
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #5cd2ff;
+    }
+    /* Detail page style - inspired by first image */
+    #detailPage {
+      display: none;
+      position: relative; z-index: 2;
+      max-width: 1000px;
+      margin: auto;
+      padding: 60px 40px;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      border-radius: 20px;
+      color: #333;
+      box-shadow: 0 0 50px rgba(0,0,0,0.3);
+      text-align: left;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    #detailPage h2 {
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+      color: #10494a;
+    }
+    #detailPage p {
+      font-size: 1.25rem;
+      margin-bottom: 30px;
+      color: #2f5a5d;
+    }
+    #backBtn {
+      cursor: pointer;
+      color: #10494a;
+      font-weight: 600;
+      background: #d0f0f2;
+      padding: 10px 20px;
+      border-radius: 30px;
+      border: none;
+      box-shadow: 0 2px 10px rgba(16,73,74,0.5);
+      transition: background 0.3s ease;
+    }
+    #backBtn:hover {
+      background: #a3d5d8;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<!-- Welcome / Subject Grid Page -->
+<div id="welcomePage" role="main" aria-label="Welcome page with subjects list">
+  <h1>Highschool Elites</h1>
+  <div class="subject-grid" id="subjectGrid">
+    <!-- subject cards injected here -->
+  </div>
+</div>
+
+<!-- Detail Page -->
+<div id="detailPage" role="region" aria-label="Subject detail page">
+  <button id="backBtn" aria-label="Go back to subject list">← Back</button>
+  <h2 id="detailTitle"></h2>
+  <p id="detailDescription">Best Practices for Using Elementor</p>
+  <img src="https://i.imgur.com/FkpWtP6.png" alt="Tutorial banner" style="width:100%; border-radius: 15px; margin-top: 20px;" />
+</div>
+
+<script>
+  const topics = [
+    { text: "Work, Energy & Power - Physics - Form 5" },
+    { text: "Simple Harmonic Motion - Physics - Form 6" },
+    { text: "Waves - Physics - Form 6" },
+    { text: "Electricity - Physics - Form 6" },
+    { text: "Algebra - Math - Form 4" },
+    { text: "Geometry - Math - Form 4" },
+    { text: "Trigonometry - Math - Form 5" },
+    { text: "Calculus Basics - Math - Form 6" },
+    { text: "Photosynthesis - Biology - Form 4" },
+    { text: "Human Digestive System - Biology - Form 5" },
+    { text: "Genetics - Biology - Form 6" },
+    { text: "Periodic Table - Chemistry - Form 4" },
+    { text: "Chemical Bonding - Chemistry - Form 5" },
+    { text: "Organic Chemistry - Chemistry - Form 6" },
+    { text: "Renaissance Art - Art - Form 4" },
+    { text: "Modern Art - Art - Form 5" },
+    { text: "Binary Systems - ICT - Form 4" },
+    { text: "Programming Basics - ICT - Form 5" },
+    { text: "Database Management - ICT - Form 6" },
+    { text: "The Universe - Astronomy - Form 4" },
+    { text: "Stars & Galaxies - Astronomy - Form 5" },
+    { text: "Astrophysics - Astronomy - Form 6" }
+  ];
+
+  const subjectGrid = document.getElementById('subjectGrid');
+  const welcomePage = document.getElementById('welcomePage');
+  const detailPage = document.getElementById('detailPage');
+  const detailTitle = document.getElementById('detailTitle');
+  const backBtn = document.getElementById('backBtn');
+
+  // Populate the welcome page grid with subjects
+  topics.forEach(topic => {
+    const card = document.createElement('div');
+    card.className = 'subject-card';
+    card.tabIndex = 0;
+    card.textContent = topic.text;
+    card.addEventListener('click', () => openDetailPage(topic));
+    card.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        openDetailPage(topic);
+      }
+    });
+    subjectGrid.appendChild(card);
+  });
+
+  function openDetailPage(topic) {
+    detailTitle.textContent = topic.text;
+    welcomePage.style.display = 'none';
+    detailPage.style.display = 'block';
+  }
+
+  backBtn.addEventListener('click', () => {
+    detailPage.style.display = 'none';
+    welcomePage.style.display = 'block';
+  });
+
+  // Background animation from your original code
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  let points = [];
+  for (let i = 0; i < 80; i++) {
+    points.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5
+    });
+  }
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < points.length; i++) {
+      let p = points[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#5cd2ff';
+      ctx.fill();
+      for (let j = i + 1; j < points.length; j++) {
+        let q = points[j];
+        let dist = Math.hypot(p.x - q.x, p.y - q.y);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(q.x, q.y);
+          ctx.strokeStyle = 'rgba(92,210,255,0.2)';
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+</script>
+</body>
+</html>
